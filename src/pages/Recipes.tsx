@@ -3,24 +3,36 @@ import RecipeCard from "@/components/RecipeCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
-import { recipes } from "@/data/recipes";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Recipe } from "@/data/recipes";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const fetchRecipes = async () => {
+  const { data, error } = await supabase.from("recipes").select("*").order('id');
+  if (error) throw new Error(error.message);
+  return data as Recipe[];
+};
 
 const Recipes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedDifficulty, setSelectedDifficulty] = useState("all");
 
-  const categories = ["all", ...Array.from(new Set(recipes.map(r => r.category)))];
+  const { data: recipes, isLoading } = useQuery({ queryKey: ["recipes"], queryFn: fetchRecipes });
+
+  const categories = useMemo(() => ["all", ...Array.from(new Set(recipes?.map(r => r.category) || []))], [recipes]);
   const difficulties = ["all", "Easy", "Medium", "Hard"];
 
   const filteredRecipes = useMemo(() => {
+    if (!recipes) return [];
     return recipes.filter(recipe => {
       const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === "all" || recipe.category === selectedCategory;
       const matchesDifficulty = selectedDifficulty === "all" || recipe.difficulty === selectedDifficulty;
       return matchesSearch && matchesCategory && matchesDifficulty;
     });
-  }, [searchTerm, selectedCategory, selectedDifficulty]);
+  }, [recipes, searchTerm, selectedCategory, selectedDifficulty]);
 
   return (
     <div className="bg-amber-50 text-stone-800">
@@ -66,7 +78,18 @@ const Recipes = () => {
         </div>
 
         {/* Recipes Grid */}
-        {filteredRecipes.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton className="h-48 w-full" />
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+              </div>
+            ))}
+          </div>
+        ) : filteredRecipes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredRecipes.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />

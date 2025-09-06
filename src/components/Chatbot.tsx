@@ -4,16 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { recipes } from "@/data/recipes";
 import { Link } from "react-router-dom";
 import { useChatbot } from "@/context/ChatbotContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Recipe } from "@/data/recipes";
 
 type Message = {
   sender: "user" | "bot";
   content: React.ReactNode;
 };
 
-const getBotResponse = (message: string): React.ReactNode => {
+const getBotResponse = async (message: string, allRecipes: Recipe[]): Promise<React.ReactNode> => {
   const lowerCaseMessage = message.toLowerCase();
 
   if (lowerCaseMessage.includes("hello") || lowerCaseMessage.includes("hi")) {
@@ -22,7 +23,7 @@ const getBotResponse = (message: string): React.ReactNode => {
 
   const keywords = lowerCaseMessage.split(" ").filter(word => word.length > 2);
   
-  const matchedRecipes = recipes.filter(recipe => {
+  const matchedRecipes = allRecipes.filter(recipe => {
     const searchString = `${recipe.title} ${recipe.category} ${recipe.description} ${recipe.difficulty}`.toLowerCase();
     return keywords.some(kw => searchString.includes(kw));
   }).slice(0, 3);
@@ -53,7 +54,18 @@ const Chatbot = () => {
     { sender: "bot", content: "Welcome to Zaika! What delicious meal are you thinking of today?" }
   ]);
   const [inputValue, setInputValue] = useState("");
+  const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchAllRecipes = async () => {
+      const { data } = await supabase.from("recipes").select("*");
+      if (data) {
+        setAllRecipes(data as Recipe[]);
+      }
+    };
+    fetchAllRecipes();
+  }, []);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -61,15 +73,17 @@ const Chatbot = () => {
     }
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (inputValue.trim() === "") return;
+  const handleSendMessage = async () => {
+    if (inputValue.trim() === "" || allRecipes.length === 0) return;
 
     const userMessage: Message = { sender: "user", content: inputValue };
-    const botResponseContent = getBotResponse(inputValue);
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue("");
+
+    const botResponseContent = await getBotResponse(inputValue, allRecipes);
     const botMessage: Message = { sender: "bot", content: botResponseContent };
 
-    setMessages(prev => [...prev, userMessage, botMessage]);
-    setInputValue("");
+    setMessages(prev => [...prev, botMessage]);
   };
 
   return (

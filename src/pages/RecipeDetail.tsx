@@ -1,15 +1,62 @@
 import { useParams } from "react-router-dom";
-import { recipes } from "@/data/recipes";
 import { Clock, ChefHat, Users, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import NotFound from "./NotFound";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Recipe } from "@/data/recipes";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const fetchRecipe = async (id: string) => {
+  const { data, error } = await supabase.from("recipes").select("*").eq("id", id).single();
+  if (error) throw new Error(error.message);
+  return data as Recipe;
+};
 
 const RecipeDetail = () => {
-  const { id } = useParams();
-  const recipe = recipes.find((r) => r.id === Number(id));
+  const { id } = useParams<{ id: string }>();
+  const { data: recipe, isLoading, isError } = useQuery({
+    queryKey: ["recipe", id],
+    queryFn: () => fetchRecipe(id!),
+    enabled: !!id,
+  });
 
-  if (!recipe) {
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <Skeleton className="h-10 w-3/4 mb-2" />
+          <Skeleton className="h-6 w-1/4 mb-6" />
+          <Skeleton className="w-full h-96 rounded-lg mb-8" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
+          <Skeleton className="h-6 w-full mb-2" />
+          <Skeleton className="h-6 w-full mb-8" />
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="md:col-span-1">
+              <Skeleton className="h-8 w-1/2 mb-4" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+            </div>
+            <div className="md:col-span-2">
+              <Skeleton className="h-8 w-1/2 mb-4" />
+              <Skeleton className="h-10 w-full mb-2" />
+              <Skeleton className="h-10 w-full mb-2" />
+              <Skeleton className="h-10 w-full mb-2" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !recipe) {
     return <NotFound />;
   }
 
