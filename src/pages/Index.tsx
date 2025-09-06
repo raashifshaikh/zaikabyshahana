@@ -8,25 +8,26 @@ import RecipeCard from "@/components/RecipeCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { mapSpoonacularToRecipe } from "@/lib/utils";
 
-const fetchRecipes = async () => {
-  const { data, error } = await supabase.from("recipes").select("*").order('id');
+const fetchRandomRecipes = async () => {
+  const { data, error } = await supabase.functions.invoke("spoonacular-proxy", {
+    body: { path: 'recipes/random', params: { number: 4 } }, // 1 for day, 3 for featured
+  });
   if (error) throw new Error(error.message);
-  return data as Recipe[];
+  return data.recipes.map(mapSpoonacularToRecipe);
 };
 
 const Index = () => {
   const { setIsOpen } = useChatbot();
-  const { data: recipes, isLoading } = useQuery({ queryKey: ["recipes"], queryFn: fetchRecipes });
+  const { data: recipes, isLoading } = useQuery({ queryKey: ["randomRecipes"], queryFn: fetchRandomRecipes });
 
   const featuredRecipes = useMemo(() => {
-    return recipes ? recipes.slice(0, 3) : [];
+    return recipes ? recipes.slice(1, 4) : [];
   }, [recipes]);
 
   const recipeOfTheDay = useMemo(() => {
-    if (!recipes || recipes.length === 0) return null;
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-    return recipes[dayOfYear % recipes.length];
+    return recipes ? recipes[0] : null;
   }, [recipes]);
 
   return (
@@ -74,13 +75,13 @@ const Index = () => {
                 <img className="h-64 w-full object-cover md:h-full" src={recipeOfTheDay.image} alt={recipeOfTheDay.title} />
               </div>
               <div className="p-8 md:w-1/2 flex flex-col justify-center">
-                <div className="uppercase tracking-wide text-sm text-red-800 font-semibold">{recipeOfTheDay.category}</div>
+                {recipeOfTheDay.category && <div className="uppercase tracking-wide text-sm text-red-800 font-semibold">{recipeOfTheDay.category}</div>}
                 <h3 className="mt-1 text-2xl font-bold text-stone-900">{recipeOfTheDay.title}</h3>
-                <p className="mt-2 text-stone-600">{recipeOfTheDay.description}</p>
-                <div className="mt-4 flex items-center">
+                <p className="mt-2 text-stone-600 line-clamp-3">{recipeOfTheDay.description}</p>
+                {recipeOfTheDay.difficulty && <div className="mt-4 flex items-center">
                   <Star className="h-5 w-5 text-amber-500 fill-current" />
                   <span className="ml-2 text-stone-600">{recipeOfTheDay.difficulty} Difficulty</span>
-                </div>
+                </div>}
                 <Link to={`/recipes/${recipeOfTheDay.id}`} className="mt-6">
                   <Button size="lg" className="w-full bg-red-800 hover:bg-red-900">
                     Get the Recipe
@@ -106,7 +107,7 @@ const Index = () => {
           </div>
           <div className="order-1 md:order-2">
             <img
-              src="https://images.unsplash.com/photo-1583162094738-05cb6278f16f?q=80&w=1887&auto=format&fit=crop"
+              src="https://images.unsplash.com/photo-1583162094738-05cb-6278f16f?q=80&w=1887&auto=format&fit=crop"
               alt="Chef Shahana"
               className="rounded-lg shadow-xl w-full h-auto object-cover aspect-square"
             />

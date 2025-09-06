@@ -7,45 +7,43 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { Link } from "react-router-dom";
 import { useChatbot } from "@/context/ChatbotContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Recipe } from "@/data/recipes";
 
 type Message = {
   sender: "user" | "bot";
   content: React.ReactNode;
 };
 
-const getBotResponse = async (message: string, allRecipes: Recipe[]): Promise<React.ReactNode> => {
+const getBotResponse = async (message: string): Promise<React.ReactNode> => {
   const lowerCaseMessage = message.toLowerCase();
 
   if (lowerCaseMessage.includes("hello") || lowerCaseMessage.includes("hi")) {
     return <p>Hello! How can I help you find a recipe today? You can ask for a cuisine, ingredient, or difficulty.</p>;
   }
 
-  const keywords = lowerCaseMessage.split(" ").filter(word => word.length > 2);
-  
-  const matchedRecipes = allRecipes.filter(recipe => {
-    const searchString = `${recipe.title} ${recipe.category} ${recipe.description} ${recipe.difficulty}`.toLowerCase();
-    return keywords.some(kw => searchString.includes(kw));
-  }).slice(0, 3);
+  const { data, error } = await supabase.functions.invoke("spoonacular-proxy", {
+    body: { path: 'recipes/complexSearch', params: { query: message, number: 3 } },
+  });
 
-  if (matchedRecipes.length > 0) {
-    return (
-      <div>
-        <p>I found these recipes for you:</p>
-        <ul className="list-disc pl-5 mt-2 space-y-1">
-          {matchedRecipes.map(recipe => (
-            <li key={recipe.id}>
-              <Link to={`/recipes/${recipe.id}`} className="text-red-800 hover:underline font-semibold">
-                {recipe.title}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
+  if (error || !data || data.results.length === 0) {
+    return <p>I'm sorry, I couldn't find any recipes matching that. Try asking for something like "pasta" or "chicken salad".</p>;
   }
 
-  return <p>I'm sorry, I couldn't find any recipes matching that. Try asking for something like "easy Indian recipes" or "recipes with salmon".</p>;
+  const matchedRecipes = data.results;
+
+  return (
+    <div>
+      <p>I found these recipes for you:</p>
+      <ul className="list-disc pl-5 mt-2 space-y-1">
+        {matchedRecipes.map((recipe: any) => (
+          <li key={recipe.id}>
+            <Link to={`/recipes/${recipe.id}`} className="text-red-800 hover:underline font-semibold">
+              {recipe.title}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 };
 
 const Chatbot = () => {
@@ -54,18 +52,7 @@ const Chatbot = () => {
     { sender: "bot", content: "Welcome to Zaika! What delicious meal are you thinking of today?" }
   ]);
   const [inputValue, setInputValue] = useState("");
-  const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const fetchAllRecipes = async () => {
-      const { data } = await supabase.from("recipes").select("*");
-      if (data) {
-        setAllRecipes(data as Recipe[]);
-      }
-    };
-    fetchAllRecipes();
-  }, []);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -74,13 +61,14 @@ const Chatbot = () => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (inputValue.trim() === "" || allRecipes.length === 0) return;
+    if (inputValue.trim() === "") return;
 
     const userMessage: Message = { sender: "user", content: inputValue };
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue("");
 
-    const botResponseContent = await getBotResponse(inputValue, allRecipes);
+    const botResponseContent = await getBotResponse(currentInput);
     const botMessage: Message = { sender: "bot", content: botResponseContent };
 
     setMessages(prev => [...prev, botMessage]);
