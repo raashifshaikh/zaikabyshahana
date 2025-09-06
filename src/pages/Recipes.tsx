@@ -1,6 +1,4 @@
 import { useState, useMemo } from "react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import RecipeCard from "@/components/RecipeCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,9 +23,8 @@ const Recipes = () => {
   }, [searchTerm, selectedCategory, selectedDifficulty]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-amber-50 text-stone-800">
-      <Header />
-      <main className="flex-grow container mx-auto py-12 px-4">
+    <div className="bg-amber-50 text-stone-800">
+      <div className="container mx-auto py-12 px-4">
         <h1 className="text-4xl font-bold text-center text-red-900 mb-4">Explore Our Recipes</h1>
         <p className="text-center text-stone-600 mb-12">Find the perfect dish for any occasion.</p>
 
@@ -81,8 +78,7 @@ const Recipes = () => {
             <p className="text-stone-600 mt-2">Try adjusting your search or filters.</p>
           </div>
         )}
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 };

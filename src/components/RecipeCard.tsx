@@ -11,7 +11,7 @@ interface RecipeCardProps {
 const RecipeCard = ({ recipe }: RecipeCardProps) => {
   return (
     <Link to={`/recipes/${recipe.id}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+      <Card className="overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
         <CardHeader className="p-0">
           <img src={recipe.image} alt={recipe.title} className="w-full h-48 object-cover" />
         </CardHeader>

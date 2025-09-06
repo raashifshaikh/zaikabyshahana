@@ -1,6 +1,4 @@
 import { useParams } from "react-router-dom";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { recipes } from "@/data/recipes";
 import { Clock, ChefHat, Users, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -16,9 +14,8 @@ const RecipeDetail = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-stone-800">
-      <Header />
-      <main className="flex-grow container mx-auto py-12 px-4">
+    <div className="bg-white text-stone-800">
+      <div className="container mx-auto py-12 px-4">
         <div className="max-w-4xl mx-auto">
           {/* Title and Category */}
           <h1 className="text-4xl font-bold text-red-900 mb-2">{recipe.title}</h1>
@@ -80,8 +77,7 @@ const RecipeDetail = () => {
             </div>
           </div>
         </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 };
