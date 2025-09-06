@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import logo from "@/assets/logo.png";
 
 const Header = () => {
   const navLinks = [
@@ -18,7 +17,7 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
         <Link to="/" className="mr-6 flex items-center space-x-2">
-          <img src={logo} alt="Zaika by Shahana Logo" className="h-12" />
+          <span className="text-2xl font-bold text-red-900 tracking-tight">Zaika</span>
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
           {navLinks.map((link) => (
@@ -41,7 +40,7 @@ const Header = () => {
             </SheetTrigger>
             <SheetContent side="right">
               <Link to="/" className="mr-6 flex items-center space-x-2 mb-6">
-                <img src={logo} alt="Zaika by Shahana Logo" className="h-12" />
+                <span className="text-2xl font-bold text-red-900 tracking-tight">Zaika</span>
               </Link>
               <div className="flex flex-col space-y-4">
                 {navLinks.map((link) => (
