@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -18,9 +19,11 @@ const Index = () => {
               Delicious Recipes, Made Simple.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
-                Explore Recipes <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <Link to="/recipes">
+                <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
+                  Explore Recipes <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
               <Button size="lg" variant="outline" className="border-white bg-transparent hover:bg-white hover:text-red-800">
                 Ask the Cooking Bot
               </Button>
@@ -85,9 +88,11 @@ const Index = () => {
               </Card>
             </div>
             <div className="text-center mt-12">
-              <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
-                View All Recipes
-              </Button>
+              <Link to="/recipes">
+                <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
+                  View All Recipes
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
