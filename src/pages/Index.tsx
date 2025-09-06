@@ -1,11 +1,19 @@
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useChatbot } from "@/context/ChatbotContext";
+import { recipes } from "@/data/recipes";
+import RecipeCard from "@/components/RecipeCard";
 
 const Index = () => {
   const { setIsOpen } = useChatbot();
+
+  const featuredRecipes = recipes.slice(0, 3);
+
+  const recipeOfTheDay = useMemo(() => {
+    return recipes[Math.floor(Math.random() * recipes.length)];
+  }, []);
 
   return (
     <div className="bg-amber-50 text-stone-800">
@@ -30,8 +38,35 @@ const Index = () => {
         </div>
       </section>
 
-      {/* About Shahana Section */}
+      {/* Recipe of the Day Section */}
       <section className="py-16 md:py-24 bg-white">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center text-red-900 mb-4">Recipe of the Day</h2>
+          <p className="text-center text-stone-600 mb-12">Our special pick for you today!</p>
+          <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden md:flex hover:shadow-red-100 transition-shadow duration-300">
+            <div className="md:w-1/2">
+              <img className="h-64 w-full object-cover md:h-full" src={recipeOfTheDay.image} alt={recipeOfTheDay.title} />
+            </div>
+            <div className="p-8 md:w-1/2 flex flex-col justify-center">
+              <div className="uppercase tracking-wide text-sm text-red-800 font-semibold">{recipeOfTheDay.category}</div>
+              <h3 className="mt-1 text-2xl font-bold text-stone-900">{recipeOfTheDay.title}</h3>
+              <p className="mt-2 text-stone-600">{recipeOfTheDay.description}</p>
+              <div className="mt-4 flex items-center">
+                <Star className="h-5 w-5 text-amber-500 fill-current" />
+                <span className="ml-2 text-stone-600">{recipeOfTheDay.difficulty} Difficulty</span>
+              </div>
+              <Link to={`/recipes/${recipeOfTheDay.id}`} className="mt-6">
+                <Button size="lg" className="w-full bg-red-800 hover:bg-red-900">
+                  Get the Recipe
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Shahana Section */}
+      <section className="py-16 md:py-24 bg-amber-50">
         <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
           <div className="order-2 md:order-1">
             <h2 className="text-3xl font-bold text-red-900 mb-4">A Pinch of Passion in Every Dish</h2>
@@ -53,38 +88,13 @@ const Index = () => {
       </section>
 
       {/* Featured Recipes Section */}
-      <section className="py-16 md:py-24 bg-amber-50">
+      <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto">
           <h2 className="text-3xl font-bold text-center text-red-900 mb-12">Featured Recipes</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Placeholder Recipe Cards */}
-            <Card className="overflow-hidden">
-              <CardHeader className="p-0">
-                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=1981&auto=format&fit=crop" alt="Recipe 1" className="w-full h-48 object-cover" />
-              </CardHeader>
-              <CardContent className="p-6">
-                <CardTitle className="mb-2">Spicy Chicken Curry</CardTitle>
-                <p className="text-stone-600">A rich and aromatic curry that's perfect for a family dinner.</p>
-              </CardContent>
-            </Card>
-            <Card className="overflow-hidden">
-              <CardHeader className="p-0">
-                <img src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1887&auto=format&fit=crop" alt="Recipe 2" className="w-full h-48 object-cover" />
-              </CardHeader>
-              <CardContent className="p-6">
-                <CardTitle className="mb-2">Continental Salad</CardTitle>
-                <p className="text-stone-600">A fresh and healthy salad with a zesty vinaigrette.</p>
-              </CardContent>
-            </Card>
-            <Card className="overflow-hidden">
-              <CardHeader className="p-0">
-                <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?q=80&w=1980&auto=format&fit=crop" alt="Recipe 3" className="w-full h-48 object-cover" />
-              </CardHeader>
-              <CardContent className="p-6">
-                <CardTitle className="mb-2">Pancakes with Berries</CardTitle>
-                <p className="text-stone-600">Fluffy pancakes topped with fresh berries and maple syrup.</p>
-              </CardContent>
-            </Card>
+            {featuredRecipes.map(recipe => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
           </div>
           <div className="text-center mt-12">
             <Link to="/recipes">

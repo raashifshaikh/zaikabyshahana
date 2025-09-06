@@ -1,28 +1,39 @@
-import { CookingPot, Instagram, Youtube, Facebook } from "lucide-react";
+import { useState } from "react";
+import { Instagram, Youtube, Facebook } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { showSuccess } from "@/utils/toast";
 
 const Footer = () => {
+  const [email, setEmail] = useState("");
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      showSuccess("Thank you for subscribing!");
+      setEmail("");
+    }
+  };
+
   return (
     <footer className="bg-stone-100 dark:bg-stone-900 border-t">
       <div className="container py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <Link to="/" className="flex items-center space-x-2 mb-4">
-            <CookingPot className="h-8 w-8 text-red-800" />
-            <span className="text-xl font-bold">Zaika by Shahana</span>
+            <img src="/logo.png" alt="Zaika by Shahana Logo" className="h-16" />
           </Link>
           <p className="text-stone-600 dark:text-stone-400">
             Delicious Recipes, Made Simple.
           </p>
           <div className="flex space-x-4 mt-4">
-            <a href="#" className="text-stone-500 hover:text-red-800">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
               <Instagram />
             </a>
-            <a href="#" className="text-stone-500 hover:text-red-800">
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
               <Youtube />
             </a>
-            <a href="#" className="text-stone-500 hover:text-red-800">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
               <Facebook />
             </a>
           </div>
@@ -41,8 +52,14 @@ const Footer = () => {
           <p className="text-stone-600 dark:text-stone-400 mb-4">
             Get the latest recipes and cooking tips delivered to your inbox.
           </p>
-          <form className="flex space-x-2">
-            <Input type="email" placeholder="Your email" />
+          <form className="flex space-x-2" onSubmit={handleSubscribe}>
+            <Input 
+              type="email" 
+              placeholder="Your email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
             <Button type="submit" className="bg-red-800 hover:bg-red-900">Subscribe</Button>
           </form>
         </div>
