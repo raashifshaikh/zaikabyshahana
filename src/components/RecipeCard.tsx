@@ -2,15 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ChefHat } from "lucide-react";
 import { Link } from "react-router-dom";
-
-export interface Recipe {
-  id: number;
-  title: string;
-  image: string;
-  category: string;
-  time: number; // in minutes
-  difficulty: "Easy" | "Medium" | "Hard";
-}
+import { Recipe } from "@/data/recipes";
 
 interface RecipeCardProps {
   recipe: Recipe;
