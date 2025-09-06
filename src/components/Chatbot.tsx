@@ -49,7 +49,7 @@ const getBotResponse = async (message: string): Promise<React.ReactNode> => {
 const Chatbot = () => {
   const { isOpen, setIsOpen } = useChatbot();
   const [messages, setMessages] = useState<Message[]>([
-    { sender: "bot", content: "Welcome to Zaika! What delicious meal are you thinking of today?" }
+    { sender: "bot", content: "Welcome to ZaikabyShahana! What delicious meal are you thinking of today?" }
   ]);
   const [inputValue, setInputValue] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -79,7 +79,7 @@ const Chatbot = () => {
       <DrawerContent className="h-[70vh]">
         <div className="mx-auto w-full max-w-md flex flex-col h-full">
           <DrawerHeader>
-            <DrawerTitle className="text-center text-red-900">Zaika Cooking Bot</DrawerTitle>
+            <DrawerTitle className="text-center text-red-900">ZaikabyShahana Cooking Bot</DrawerTitle>
           </DrawerHeader>
           <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
             <div className="space-y-4">

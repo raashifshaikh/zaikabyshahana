@@ -102,7 +102,7 @@ const Index = () => {
               Welcome to my culinary world! I'm Shahana, a passionate chef dedicated to making cooking an enjoyable and accessible experience for everyone. My journey began in my grandmother's kitchen, where the aroma of spices and the joy of shared meals ignited my love for food.
             </p>
             <p className="text-stone-600 leading-relaxed">
-              Here at Zaika, I share my favorite recipes, from timeless Indian classics to modern continental dishes. My philosophy is simple: use fresh ingredients, honor traditional techniques, and don't be afraid to experiment. Let's cook together!
+              Here at ZaikabyShahana, I share my favorite recipes, from timeless Indian classics to modern continental dishes. My philosophy is simple: use fresh ingredients, honor traditional techniques, and don't be afraid to experiment. Let's cook together!
             </p>
           </div>
           <div className="order-1 md:order-2">

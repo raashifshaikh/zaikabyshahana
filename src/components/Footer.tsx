@@ -21,7 +21,7 @@ const Footer = () => {
       <div className="container py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <Link to="/" className="flex items-center space-x-2 mb-4">
-            <span className="text-3xl font-bold text-red-900 tracking-tight">Zaika</span>
+            <span className="text-3xl font-bold text-red-900 tracking-tight">ZaikabyShahana</span>
           </Link>
           <p className="text-stone-600 dark:text-stone-400">
             Delicious Recipes, Made Simple.
