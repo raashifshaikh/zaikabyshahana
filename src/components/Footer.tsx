@@ -28,7 +28,7 @@ const Footer = () => {
             Delicious Recipes, Made Simple.
           </p>
           <div className="flex space-x-4 mt-4">
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
+            <a href="https://www.instagram.com/zaikabyshahana/" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
               <Instagram />
             </a>
             <a href="https://www.youtube.com/@ZaikaZauqByShahana" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
