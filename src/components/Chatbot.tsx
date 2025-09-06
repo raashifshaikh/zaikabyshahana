@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Link } from "react-router-dom";
 import { useChatbot } from "@/context/ChatbotContext";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,42 +13,22 @@ type Message = {
 };
 
 const getBotResponse = async (message: string): Promise<React.ReactNode> => {
-  const lowerCaseMessage = message.toLowerCase();
-
-  if (lowerCaseMessage.includes("hello") || lowerCaseMessage.includes("hi")) {
-    return <p>Hello! How can I help you find a recipe today? You can ask for a cuisine, ingredient, or difficulty.</p>;
-  }
-
-  const { data, error } = await supabase.functions.invoke("spoonacular-proxy", {
-    body: { path: 'recipes/complexSearch', params: { query: message, number: 3 } },
+  const { data, error } = await supabase.functions.invoke("deepseek-proxy", {
+    body: { message },
   });
 
-  if (error || !data || data.results.length === 0) {
-    return <p>I'm sorry, I couldn't find any recipes matching that. Try asking for something like "pasta" or "chicken salad".</p>;
+  if (error || data.error) {
+    console.error("Error invoking deepseek-proxy:", error || data.error);
+    return <p>I'm sorry, something went wrong. It's possible the API key is missing. Please ask the site administrator to check the Supabase project settings.</p>;
   }
 
-  const matchedRecipes = data.results;
-
-  return (
-    <div>
-      <p>I found these recipes for you:</p>
-      <ul className="list-disc pl-5 mt-2 space-y-1">
-        {matchedRecipes.map((recipe: any) => (
-          <li key={recipe.id}>
-            <Link to={`/recipes/${recipe.id}`} className="text-red-800 hover:underline font-semibold">
-              {recipe.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  return <p>{data.reply}</p>;
 };
 
 const Chatbot = () => {
   const { isOpen, setIsOpen } = useChatbot();
   const [messages, setMessages] = useState<Message[]>([
-    { sender: "bot", content: "Welcome to ZaikabyShahana! What delicious meal are you thinking of today?" }
+    { sender: "bot", content: "Welcome to ZaikabyShahana! I'm your AI cooking assistant. How can I help you today?" }
   ]);
   const [inputValue, setInputValue] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
