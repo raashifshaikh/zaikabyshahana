@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import Recipes from "./pages/Recipes";
 import RecipeDetail from "./pages/RecipeDetail";
 import About from "./pages/About";
+import Contact from "./pages/Contact";
 import Layout from "./components/Layout";
 import { ChatbotProvider } from "./context/ChatbotContext";
 
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/recipes" element={<Recipes />} />
               <Route path="/recipes/:id" element={<RecipeDetail />} />
               <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

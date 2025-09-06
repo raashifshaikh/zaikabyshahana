@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { showSuccess } from "@/utils/toast";
+import logo from "@/assets/logo.png";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
@@ -21,7 +22,7 @@ const Footer = () => {
       <div className="container py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <Link to="/" className="flex items-center space-x-2 mb-4">
-            <img src="/logo.png" alt="Zaika by Shahana Logo" className="h-16" />
+            <img src={logo} alt="Zaika by Shahana Logo" className="h-16" />
           </Link>
           <p className="text-stone-600 dark:text-stone-400">
             Delicious Recipes, Made Simple.
