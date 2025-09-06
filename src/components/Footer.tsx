@@ -31,7 +31,7 @@ const Footer = () => {
             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
               <Instagram />
             </a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
+            <a href="https://www.youtube.com/@ZaikaZauqByShahana" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
               <Youtube />
             </a>
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-stone-500 hover:text-red-800">
