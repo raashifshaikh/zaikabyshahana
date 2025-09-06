@@ -46,6 +46,7 @@ const Footer = () => {
             <li><Link to="/about" className="text-stone-600 hover:text-red-800">About</Link></li>
             <li><Link to="/blog" className="text-stone-600 hover:text-red-800">Blog</Link></li>
             <li><Link to="/contact" className="text-stone-600 hover:text-red-800">Contact</Link></li>
+            <li><a href="https://www.snapchat.com/add/s_shainaaaa" target="_blank" rel="noopener noreferrer" className="text-stone-600 hover:text-red-800">Snapchat</a></li>
           </ul>
         </div>
         <div>
