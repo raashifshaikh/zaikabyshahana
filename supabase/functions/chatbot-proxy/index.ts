@@ -34,7 +34,7 @@ serve(async (req) => {
         'X-Title': `ZaikabyShahana`,
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-120b:free",
+        model: "mistralai/mistral-7b-instruct:free", // Switched to a more reliable free model
         messages: [
           { role: "system", content: "You are a friendly and helpful cooking assistant for a recipe website called ZaikabyShahana. Keep your answers concise and focused on cooking, recipes, and culinary advice." },
           { role: "user", content: message },
