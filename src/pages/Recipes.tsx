@@ -48,7 +48,21 @@ const fetchRecipes = async (searchTerm: string, category: string) => {
     return fullRecipes.map(mapMealDBToRecipe);
   }
 
-  return []; // Return empty if no search term or category
+  // Initial load: fetch 8 random recipes
+  if (!searchTerm && category === "all") {
+    const randomPromises = Array.from({ length: 8 }).map(() => 
+      supabase.functions.invoke("themealdb-proxy", {
+        body: { path: 'random.php' },
+      })
+    );
+    const results = await Promise.all(randomPromises);
+    const recipes = results
+      .map(res => res.data?.meals?.[0])
+      .filter(Boolean);
+    return recipes.map(mapMealDBToRecipe);
+  }
+
+  return [];
 };
 
 const Recipes = () => {
@@ -61,18 +75,19 @@ const Recipes = () => {
   const { data: recipes, isLoading } = useQuery({ 
     queryKey: ["recipes", debouncedSearchTerm, selectedCategory], 
     queryFn: () => fetchRecipes(debouncedSearchTerm, selectedCategory),
-    enabled: !!debouncedSearchTerm || selectedCategory !== "all",
   });
 
   const handleCategoryChange = (category: string) => {
-    setSearchTerm(""); // Clear search term when a category is selected
+    setSearchTerm("");
     setSelectedCategory(category);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedCategory("all"); // Clear category when user types a search term
+    setSelectedCategory("all");
     setSearchTerm(e.target.value);
   };
+
+  const hasActiveFilter = debouncedSearchTerm || selectedCategory !== "all";
 
   return (
     <div className="bg-amber-50 text-stone-800 min-h-screen">
@@ -80,7 +95,6 @@ const Recipes = () => {
         <h1 className="text-4xl font-bold text-center text-red-900 mb-4">Explore Our Recipes</h1>
         <p className="text-center text-stone-600 mb-12">Find the perfect dish for any occasion.</p>
 
-        {/* Search and Filters */}
         <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-white p-6 rounded-lg shadow-sm">
           <div className="relative md:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-stone-400" />
@@ -105,7 +119,6 @@ const Recipes = () => {
           </Select>
         </div>
 
-        {/* Recipes Grid */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -118,16 +131,16 @@ const Recipes = () => {
           </div>
         ) : recipes && recipes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {recipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
+            {recipes.map((recipe, index) => (
+              <RecipeCard key={recipe.id} recipe={recipe} index={index} />
             ))}
           </div>
-        ) : (
+        ) : hasActiveFilter ? (
           <div className="text-center py-16">
             <h2 className="text-2xl font-semibold text-red-900">No Recipes Found</h2>
-            <p className="text-stone-600 mt-2">Please start a search or select a category to find delicious recipes.</p>
+            <p className="text-stone-600 mt-2">Try adjusting your search or selecting a different category.</p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

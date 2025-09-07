@@ -6,12 +6,17 @@ import { Recipe } from "@/data/recipes";
 
 interface RecipeCardProps {
   recipe: Recipe;
+  index: number;
 }
 
-const RecipeCard = ({ recipe }: RecipeCardProps) => {
+const RecipeCard = ({ recipe, index }: RecipeCardProps) => {
   return (
-    <Link to={`/recipes/${recipe.id}`}>
-      <Card className="overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+    <Link 
+      to={`/recipes/${recipe.id}`} 
+      className="block animate-fade-in-up"
+      style={{ animationDelay: `${index * 100}ms` }}
+    >
+      <Card className="overflow-hidden hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group h-full">
         <CardHeader className="p-0 overflow-hidden">
           <img src={recipe.image} alt={recipe.title} className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105" />
         </CardHeader>

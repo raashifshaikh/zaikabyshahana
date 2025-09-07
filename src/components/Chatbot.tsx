@@ -12,6 +12,14 @@ type Message = {
   content: React.ReactNode;
 };
 
+const TypingIndicator = () => (
+  <div className="flex items-center gap-1.5 p-2">
+    <span className="h-2 w-2 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+    <span className="h-2 w-2 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+    <span className="h-2 w-2 bg-stone-400 rounded-full animate-bounce"></span>
+  </div>
+);
+
 const getBotResponse = async (message: string): Promise<React.ReactNode> => {
   const { data, error } = await supabase.functions.invoke("chatbot-proxy", {
     body: { message },
@@ -41,25 +49,28 @@ const Chatbot = () => {
     { sender: "bot", content: "Welcome to ZaikabyShahana! I'm your AI cooking assistant. How can I help you today?" }
   ]);
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSendMessage = async () => {
-    if (inputValue.trim() === "") return;
+    if (inputValue.trim() === "" || isLoading) return;
 
     const userMessage: Message = { sender: "user", content: inputValue };
     setMessages(prev => [...prev, userMessage]);
     const currentInput = inputValue;
     setInputValue("");
+    setIsLoading(true);
 
     const botResponseContent = await getBotResponse(currentInput);
     const botMessage: Message = { sender: "bot", content: botResponseContent };
-
+    
+    setIsLoading(false);
     setMessages(prev => [...prev, botMessage]);
   };
 
@@ -81,6 +92,14 @@ const Chatbot = () => {
                   {msg.sender === 'user' && <User className="h-8 w-8 text-stone-500 flex-shrink-0" />}
                 </div>
               ))}
+              {isLoading && (
+                <div className="flex items-start gap-3">
+                  <Bot className="h-8 w-8 text-red-800 flex-shrink-0" />
+                  <div className="rounded-lg bg-stone-100">
+                    <TypingIndicator />
+                  </div>
+                </div>
+              )}
             </div>
           </ScrollArea>
           <div className="p-4 border-t">
@@ -91,8 +110,9 @@ const Chatbot = () => {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   className="pr-12"
+                  disabled={isLoading}
                 />
-                <Button type="submit" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-10 bg-red-800 hover:bg-red-900">
+                <Button type="submit" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-10 bg-red-800 hover:bg-red-900" disabled={isLoading}>
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
