@@ -20,6 +20,7 @@ const SEO = ({ title, description, keywords, author = "Shahana", image }: SEOPro
       <meta name="description" content={description || defaultDescription} />
       <meta name="keywords" content={keywords || defaultKeywords} />
       <meta name="author" content={author} />
+      <meta name="google-site-verification" content="KF02zBfaE5MwmQrwGCuptLwFb_i1ZXGVFdl__ITM7qM" />
       
       {/* Open Graph / Facebook */}
       <meta property="og:type" content="website" />
