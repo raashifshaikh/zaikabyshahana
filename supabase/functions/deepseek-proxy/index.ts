@@ -15,11 +15,13 @@ serve(async (req) => {
   try {
     const apiKey = Deno.env.get("DEEPSEEK_API_KEY")
     if (!apiKey) {
+      console.error("DEEPSEEK_API_KEY not found.");
       throw new Error("DEEPSEEK_API_KEY is not set in environment variables.")
     }
 
     const { message } = await req.json()
     if (!message) {
+      console.error("No message in request body.");
       throw new Error("No message provided in the request body.")
     }
 
@@ -40,30 +42,29 @@ serve(async (req) => {
 
     const data = await response.json()
 
-    // Check for an error object in the response body, even if status is 2xx
-    if (data.error) {
-      throw new Error(data.error.message || JSON.stringify(data.error));
-    }
-
     if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`)
+      console.error("Deepseek API Error:", data);
+      const errorMessage = data?.error?.message || `API request failed with status ${response.status}`;
+      throw new Error(errorMessage);
     }
 
     const botResponse = data.choices?.[0]?.message?.content;
 
     if (!botResponse) {
-      throw new Error("Failed to extract bot response from API. Full response: " + JSON.stringify(data));
+      console.error("Could not extract bot response. Full API response:", data);
+      throw new Error("Failed to extract bot response from API.");
     }
 
     return new Response(JSON.stringify({ reply: botResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
+
   } catch (error) {
-    console.error("Deepseek Proxy Error:", error.message);
+    console.error("Error in Edge Function:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 500,
     })
   }
 })

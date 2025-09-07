@@ -18,13 +18,18 @@ const getBotResponse = async (message: string): Promise<React.ReactNode> => {
   });
 
   if (error) {
-    console.error("Error invoking deepseek-proxy:", error);
-    return <p className="text-red-500">Error: {error.message}</p>;
+    console.error("Error invoking Supabase function:", error);
+    const detailedError = (error as any).context?.error?.message || error.message;
+    return <p className="text-red-500">I'm sorry, an error occurred: {detailedError}</p>;
   }
 
   if (data.error) {
-    console.error("Error from deepseek-proxy function:", data.error);
-    return <p className="text-red-500">I'm sorry, something went wrong. Here is the error detail: {data.error}</p>;
+    console.error("Error payload from Supabase function:", data.error);
+    return <p className="text-red-500">I'm sorry, something went wrong: {data.error}</p>;
+  }
+  
+  if (!data || !data.reply) {
+    return <p className="text-red-500">I'm sorry, I received an unexpected response from the server.</p>;
   }
 
   return <p>{data.reply}</p>;
