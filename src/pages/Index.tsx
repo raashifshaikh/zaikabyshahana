@@ -103,10 +103,10 @@ const Index = () => {
           <div className="order-2 md:order-1">
             <h2 className="text-3xl font-bold text-red-900 mb-4">A Pinch of Passion in Every Dish</h2>
             <p className="text-stone-600 mb-4 leading-relaxed">
-              Welcome to my culinary world! I'm Shahana, a passionate chef dedicated to making cooking an enjoyable and accessible experience for everyone. My journey began in my grandmother's kitchen, where the aroma of spices and the joy of shared meals ignited my love for food.
+              Hi, I’m Shahana! I’m a full-time teacher by profession and a passionate cook at heart. Cooking is my way of expressing creativity, love, and culture.
             </p>
             <p className="text-stone-600 leading-relaxed">
-              Here at ZaikabyShahana, I share my favorite recipes, from timeless Indian classics to modern continental dishes. My philosophy is simple: use fresh ingredients, honor traditional techniques, and don't be afraid to experiment. Let's cook together!
+              Through Zaika by Shahana, I want to share my journey, my favorite recipes, and my love for desi food with the world. I hope you’ll find inspiration here to create meals that not only taste good but also make memories.
             </p>
           </div>
           <div className="order-1 md:order-2">

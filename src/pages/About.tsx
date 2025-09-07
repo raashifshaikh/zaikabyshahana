@@ -25,12 +25,15 @@ const About = () => {
             />
           </div>
           <div className="md:col-span-3">
-            <h2 className="text-3xl font-bold text-red-900 mb-4">My Culinary Journey</h2>
+            <h2 className="text-3xl font-bold text-red-900 mb-4">Hi, I’m Shahana 👩‍🍳✨</h2>
             <p className="text-stone-600 mb-4 leading-relaxed">
-              Hello and welcome to ZaikabyShahana! I'm Shahana, and my love for cooking is a story that begins in the heart of my family's home. I grew up surrounded by the rich aromas and vibrant flavors of my grandmother's kitchen. She taught me that food is more than just sustenance; it's a language of love, a way to bring people together, and a celebration of our heritage.
+              I’m 22 years old, a full-time teacher by profession and a passionate cook at heart. Cooking has always been more than just a hobby for me—it’s my way of expressing creativity, love, and culture.
+            </p>
+            <p className="text-stone-600 mb-4 leading-relaxed">
+              While I spend most of my day teaching, I dedicate my free time to experimenting in the kitchen, discovering flavors, and sharing recipes that bring people together. Among all dishes, chicken recipes hold a special place in my heart—from spicy curries to flavorful biryanis, I love exploring new ways to make them delicious.
             </p>
             <p className="text-stone-600 mb-6 leading-relaxed">
-              What started as a childhood fascination has blossomed into a lifelong passion. I've spent years honing my skills, experimenting with ingredients, and exploring cuisines from around the world. ZaikabyShahana is my personal collection of recipes, a place where I share both cherished family secrets and modern culinary creations. My goal is to demystify cooking and empower you to create delicious, wholesome meals in your own kitchen.
+              Through Zaika by Shahana, I want to share my journey, my favorite recipes, and my love for desi food with the world. Whether you’re a beginner or an experienced foodie, I hope you’ll find inspiration here to create meals that not only taste good but also make memories.
             </p>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
