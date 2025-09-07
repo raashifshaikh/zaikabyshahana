@@ -119,11 +119,11 @@ const Index = () => {
                 Through Zaika by Shahana, I want to share my journey, my favorite recipes, and my love for desi food with the world. I hope you’ll find inspiration here to create meals that not only taste good but also make memories.
               </p>
             </div>
-            <div className="order-1 md:order-2">
+            <div className="order-1 md:order-2 bg-white p-8 rounded-lg shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1583162094738-05cb-6278f16f?q=80&w=1887&auto=format&fit=crop"
-                alt="Chef Shahana"
-                className="rounded-lg shadow-xl w-full h-auto object-cover aspect-square"
+                src="https://i.postimg.cc/tZy1x4jT/zaikabyshahana-high-resolution-logo-transparent.png"
+                alt="ZaikabyShahana Logo"
+                className="w-full h-auto object-contain"
               />
             </div>
           </div>
