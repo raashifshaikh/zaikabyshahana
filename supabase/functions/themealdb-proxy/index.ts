@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const SPOONACULAR_API_URL = "https://api.spoonacular.com"
+const MEALDB_API_URL = "https://www.themealdb.com/api/json/v1/1"
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,15 +13,10 @@ serve(async (req) => {
   }
 
   try {
-    const apiKey = Deno.env.get("SPOONACULAR_API_KEY")
-    if (!apiKey) {
-      throw new Error("SPOONACULAR_API_KEY is not set in environment variables. Please add it in your Supabase project settings.")
-    }
-
-    const { path, params } = await req.json() // e.g., path: 'recipes/complexSearch', params: { query: 'pasta' }
+    const { path, params } = await req.json() // e.g., path: 'search.php', params: { s: 'Arrabiata' }
     
-    const queryParams = new URLSearchParams({ ...params, apiKey })
-    const apiUrl = `${SPOONACULAR_API_URL}/${path}?${queryParams}`
+    const queryParams = new URLSearchParams(params)
+    const apiUrl = `${MEALDB_API_URL}/${path}?${queryParams}`
 
     const response = await fetch(apiUrl)
     const data = await response.json()

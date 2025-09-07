@@ -5,27 +5,45 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Recipe } from "@/data/recipes";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapSpoonacularToRecipe } from "@/lib/utils";
+import { mapMealDBToRecipe } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
 
 const fetchRecipes = async (searchTerm: string, category: string) => {
-  const params: any = {
-    query: searchTerm,
-    number: 20,
-    addRecipeInformation: true,
-  };
-  if (category !== "all") {
-    params.cuisine = category;
+  // If searching by term, this takes precedence
+  if (searchTerm) {
+    const { data, error } = await supabase.functions.invoke("themealdb-proxy", {
+      body: { path: 'search.php', params: { s: searchTerm } },
+    });
+    if (error) throw new Error(error.message);
+    return data.meals ? data.meals.map(mapMealDBToRecipe) : [];
   }
 
-  const { data, error } = await supabase.functions.invoke("spoonacular-proxy", {
-    body: { path: 'recipes/complexSearch', params },
-  });
+  // If filtering by category
+  if (category && category !== "all") {
+    // 1. Get list of meal stubs in the category
+    const { data: categoryData, error: categoryError } = await supabase.functions.invoke("themealdb-proxy", {
+      body: { path: 'filter.php', params: { c: category } },
+    });
+    if (categoryError) throw new Error(categoryError.message);
+    if (!categoryData.meals) return [];
 
-  if (error) throw new Error(error.message);
-  return data.results.map(mapSpoonacularToRecipe);
+    // 2. Fetch full details for each meal in parallel for a richer UI
+    const recipePromises = categoryData.meals.map((meal: any) => 
+      supabase.functions.invoke("themealdb-proxy", {
+        body: { path: 'lookup.php', params: { i: meal.idMeal } },
+      })
+    );
+    const recipeResults = await Promise.all(recipePromises);
+    
+    const fullRecipes = recipeResults
+      .map(res => res.data?.meals?.[0])
+      .filter(Boolean);
+
+    return fullRecipes.map(mapMealDBToRecipe);
+  }
+
+  return []; // Return empty if no search term or category
 };
 
 const Recipes = () => {
@@ -33,7 +51,7 @@ const Recipes = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const categories = ["all", "African", "Asian", "American", "British", "Cajun", "Caribbean", "Chinese", "European", "French", "German", "Greek", "Indian", "Italian", "Japanese", "Korean", "Mexican", "Middle Eastern", "Spanish", "Thai", "Vietnamese"];
+  const categories = ["all", "Beef", "Breakfast", "Chicken", "Dessert", "Goat", "Lamb", "Miscellaneous", "Pasta", "Pork", "Seafood", "Side", "Starter", "Vegan", "Vegetarian"];
 
   const { data: recipes, isLoading } = useQuery({ 
     queryKey: ["recipes", debouncedSearchTerm, selectedCategory], 
@@ -41,8 +59,18 @@ const Recipes = () => {
     enabled: !!debouncedSearchTerm || selectedCategory !== "all",
   });
 
+  const handleCategoryChange = (category: string) => {
+    setSearchTerm(""); // Clear search term when a category is selected
+    setSelectedCategory(category);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedCategory("all"); // Clear category when user types a search term
+    setSearchTerm(e.target.value);
+  };
+
   return (
-    <div className="bg-amber-50 text-stone-800">
+    <div className="bg-amber-50 text-stone-800 min-h-screen">
       <div className="container mx-auto py-12 px-4">
         <h1 className="text-4xl font-bold text-center text-red-900 mb-4">Explore Our Recipes</h1>
         <p className="text-center text-stone-600 mb-12">Find the perfect dish for any occasion.</p>
@@ -55,17 +83,17 @@ const Recipes = () => {
               placeholder="Search for recipes..." 
               className="pl-10" 
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
           </div>
-          <Select onValueChange={setSelectedCategory} defaultValue="all">
+          <Select onValueChange={handleCategoryChange} value={selectedCategory}>
             <SelectTrigger>
-              <SelectValue placeholder="Filter by Cuisine" />
+              <SelectValue placeholder="Filter by Category" />
             </SelectTrigger>
             <SelectContent>
               {categories.map(category => (
                 <SelectItem key={category} value={category}>
-                  {category === "all" ? "All Cuisines" : category}
+                  {category === "all" ? "All Categories" : category}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -80,7 +108,6 @@ const Recipes = () => {
                 <Skeleton className="h-48 w-full" />
                 <Skeleton className="h-4 w-1/4" />
                 <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-full" />
               </div>
             ))}
           </div>
@@ -93,7 +120,7 @@ const Recipes = () => {
         ) : (
           <div className="text-center py-16">
             <h2 className="text-2xl font-semibold text-red-900">No Recipes Found</h2>
-            <p className="text-stone-600 mt-2">Try adjusting your search or filters.</p>
+            <p className="text-stone-600 mt-2">Please start a search or select a category to find delicious recipes.</p>
           </div>
         )}
       </div>

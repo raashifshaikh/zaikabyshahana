@@ -1,21 +1,25 @@
 import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Utensils } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useChatbot } from "@/context/ChatbotContext";
-import { Recipe } from "@/data/recipes";
 import RecipeCard from "@/components/RecipeCard";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapSpoonacularToRecipe } from "@/lib/utils";
+import { mapMealDBToRecipe } from "@/lib/utils";
 
 const fetchRandomRecipes = async () => {
-  const { data, error } = await supabase.functions.invoke("spoonacular-proxy", {
-    body: { path: 'recipes/random', params: { number: 4 } }, // 1 for day, 3 for featured
-  });
-  if (error) throw new Error(error.message);
-  return data.recipes.map(mapSpoonacularToRecipe);
+  const randomRecipePromises = Array.from({ length: 4 }).map(() =>
+    supabase.functions.invoke("themealdb-proxy", {
+      body: { path: 'random.php' },
+    })
+  );
+  const results = await Promise.all(randomRecipePromises);
+  const recipes = results
+    .map(res => res.data?.meals?.[0])
+    .filter(Boolean);
+  return recipes.map(mapMealDBToRecipe);
 };
 
 const Index = () => {
@@ -78,9 +82,9 @@ const Index = () => {
                 {recipeOfTheDay.category && <div className="uppercase tracking-wide text-sm text-red-800 font-semibold">{recipeOfTheDay.category}</div>}
                 <h3 className="mt-1 text-2xl font-bold text-stone-900">{recipeOfTheDay.title}</h3>
                 <p className="mt-2 text-stone-600 line-clamp-3">{recipeOfTheDay.description}</p>
-                {recipeOfTheDay.difficulty && <div className="mt-4 flex items-center">
-                  <Star className="h-5 w-5 text-amber-500 fill-current" />
-                  <span className="ml-2 text-stone-600">{recipeOfTheDay.difficulty} Difficulty</span>
+                {recipeOfTheDay.area && <div className="mt-4 flex items-center">
+                  <Utensils className="h-5 w-5 text-red-800" />
+                  <span className="ml-2 text-stone-600">{recipeOfTheDay.area} Cuisine</span>
                 </div>}
                 <Link to={`/recipes/${recipeOfTheDay.id}`} className="mt-6">
                   <Button size="lg" className="w-full bg-red-800 hover:bg-red-900">

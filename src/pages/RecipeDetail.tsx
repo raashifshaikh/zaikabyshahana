@@ -1,19 +1,20 @@
 import { useParams } from "react-router-dom";
-import { Clock, ChefHat, Users, Printer } from "lucide-react";
+import { Utensils, Printer, Youtube, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import NotFound from "./NotFound";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapSpoonacularToRecipe } from "@/lib/utils";
+import { mapMealDBToRecipe } from "@/lib/utils";
 
 const fetchRecipe = async (id: string) => {
-  const { data, error } = await supabase.functions.invoke("spoonacular-proxy", {
-    body: { path: `recipes/${id}/information`, params: { includeNutrition: false } },
+  const { data, error } = await supabase.functions.invoke("themealdb-proxy", {
+    body: { path: `lookup.php`, params: { i: id } },
   });
   if (error) throw new Error(error.message);
-  return mapSpoonacularToRecipe(data);
+  if (!data.meals || data.meals.length === 0) throw new Error("Recipe not found");
+  return mapMealDBToRecipe(data.meals[0]);
 };
 
 const RecipeDetail = () => {
@@ -37,18 +38,14 @@ const RecipeDetail = () => {
             <Skeleton className="h-16 w-full" />
             <Skeleton className="h-16 w-full" />
           </div>
-          <Skeleton className="h-6 w-full mb-2" />
-          <Skeleton className="h-6 w-full mb-8" />
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
               <Skeleton className="h-8 w-1/2 mb-4" />
               <Skeleton className="h-4 w-full mb-2" />
               <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-full mb-2" />
             </div>
             <div className="md:col-span-2">
               <Skeleton className="h-8 w-1/2 mb-4" />
-              <Skeleton className="h-10 w-full mb-2" />
               <Skeleton className="h-10 w-full mb-2" />
               <Skeleton className="h-10 w-full mb-2" />
             </div>
@@ -66,41 +63,35 @@ const RecipeDetail = () => {
     <div className="bg-white text-stone-800">
       <div className="container mx-auto py-12 px-4">
         <div className="max-w-4xl mx-auto">
-          {/* Title and Category */}
           <h1 className="text-4xl font-bold text-red-900 mb-2">{recipe.title}</h1>
-          {recipe.category && <Badge variant="secondary" className="mb-6">{recipe.category}</Badge>}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {recipe.category && <Badge variant="secondary">{recipe.category}</Badge>}
+            {recipe.area && <Badge variant="outline">{recipe.area}</Badge>}
+          </div>
 
-          {/* Image */}
           <img src={recipe.image} alt={recipe.title} className="w-full h-96 object-cover rounded-lg shadow-lg mb-8" />
 
-          {/* Meta Info */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-8 p-4 bg-amber-50 rounded-lg">
-            <div className="flex flex-col items-center">
-              <Clock className="h-6 w-6 mb-1 text-red-800" />
-              <span className="font-semibold">Time</span>
-              <span>{recipe.time ? `${recipe.time} min` : 'N/A'}</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <ChefHat className="h-6 w-6 mb-1 text-red-800" />
-              <span className="font-semibold">Difficulty</span>
-              <span>{recipe.difficulty || 'N/A'}</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <Users className="h-6 w-6 mb-1 text-red-800" />
-              <span className="font-semibold">Servings</span>
-              <span>{recipe.servings || 'N/A'}</span>
-            </div>
-            <div className="flex flex-col items-center justify-center">
-               <Button variant="ghost" onClick={() => window.print()}>
-                <Printer className="h-6 w-6 text-red-800" />
-                <span className="ml-2">Print</span>
-              </Button>
-            </div>
+          <div className="flex flex-wrap items-center justify-center gap-4 text-center mb-8 p-4 bg-amber-50 rounded-lg">
+            {recipe.youtubeUrl && (
+              <a href={recipe.youtubeUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" className="text-red-800 hover:text-red-900">
+                  <Youtube className="h-6 w-6 mr-2" /> Watch on YouTube
+                </Button>
+              </a>
+            )}
+            <Button variant="ghost" onClick={() => window.print()}>
+              <Printer className="h-6 w-6 text-red-800" />
+              <span className="ml-2">Print Recipe</span>
+            </Button>
           </div>
           
-          {recipe.description && <p className="text-stone-600 text-lg mb-8">{recipe.description}</p>}
+          {recipe.tags && recipe.tags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mb-8">
+              <Tag className="h-5 w-5 text-stone-500" />
+              {recipe.tags.map(tag => <Badge key={tag} variant="outline">{tag}</Badge>)}
+            </div>
+          )}
 
-          {/* Ingredients and Instructions */}
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
               <h2 className="text-2xl font-bold text-red-900 mb-4 border-b-2 border-red-800 pb-2">Ingredients</h2>

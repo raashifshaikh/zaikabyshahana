@@ -6,30 +6,30 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Helper function to map Spoonacular API response to our Recipe type
-export const mapSpoonacularToRecipe = (spoonacularRecipe: any): Recipe => {
-  const stripHtml = (html: string) => html ? html.replace(/<[^>]*>?/gm, '') : '';
-
-  const getDifficulty = (readyInMinutes: number): "Easy" | "Medium" | "Hard" => {
-    if (!readyInMinutes) return "Easy";
-    if (readyInMinutes <= 30) return "Easy";
-    if (readyInMinutes <= 60) return "Medium";
-    return "Hard";
-  };
+// Helper function to map TheMealDB API response to our Recipe type
+export const mapMealDBToRecipe = (meal: any): Recipe => {
+  const ingredients: { quantity: string; name: string }[] = [];
+  for (let i = 1; i <= 20; i++) {
+    const ingredient = meal[`strIngredient${i}`];
+    const measure = meal[`strMeasure${i}`];
+    if (ingredient && ingredient.trim() !== "") {
+      ingredients.push({
+        quantity: measure ? measure.trim() : "",
+        name: ingredient.trim(),
+      });
+    }
+  }
 
   return {
-    id: spoonacularRecipe.id,
-    title: spoonacularRecipe.title,
-    image: spoonacularRecipe.image,
-    category: spoonacularRecipe.cuisines?.[0] || spoonacularRecipe.dishTypes?.[0],
-    time: spoonacularRecipe.readyInMinutes,
-    difficulty: getDifficulty(spoonacularRecipe.readyInMinutes),
-    servings: spoonacularRecipe.servings,
-    description: stripHtml(spoonacularRecipe.summary),
-    ingredients: spoonacularRecipe.extendedIngredients?.map((ing: any) => ({
-      quantity: `${ing.amount} ${ing.unit}`,
-      name: ing.name,
-    })) || [],
-    instructions: spoonacularRecipe.analyzedInstructions?.[0]?.steps.map((step: any) => step.step) || [],
+    id: meal.idMeal,
+    title: meal.strMeal,
+    image: meal.strMealThumb,
+    category: meal.strCategory,
+    area: meal.strArea,
+    tags: meal.strTags ? meal.strTags.split(',') : [],
+    description: meal.strInstructions, // The API provides the full instructions here
+    ingredients,
+    instructions: meal.strInstructions?.split('\r\n').filter((step: string) => step.trim() !== '') || [],
+    youtubeUrl: meal.strYoutube,
   };
 };
