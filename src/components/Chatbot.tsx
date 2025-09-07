@@ -17,9 +17,14 @@ const getBotResponse = async (message: string): Promise<React.ReactNode> => {
     body: { message },
   });
 
-  if (error || data.error) {
-    console.error("Error invoking deepseek-proxy:", error || data.error);
-    return <p>I'm sorry, something went wrong. It's possible the API key is missing. Please ask the site administrator to check the Supabase project settings.</p>;
+  if (error) {
+    console.error("Error invoking deepseek-proxy:", error);
+    return <p className="text-red-500">Error: {error.message}</p>;
+  }
+
+  if (data.error) {
+    console.error("Error from deepseek-proxy function:", data.error);
+    return <p className="text-red-500">I'm sorry, something went wrong. Here is the error detail: {data.error}</p>;
   }
 
   return <p>{data.reply}</p>;
