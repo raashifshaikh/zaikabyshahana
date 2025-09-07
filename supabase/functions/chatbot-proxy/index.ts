@@ -13,18 +13,35 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Chatbot function invoked.");
+
     const apiKey = Deno.env.get("OPENROUTER_API_KEY")
     if (!apiKey) {
-      console.error("OPENROUTER_API_KEY not found.");
-      throw new Error("OPENROUTER_API_KEY is not set in environment variables.")
+      console.error("CRITICAL: OPENROUTER_API_KEY environment variable not found.");
+      throw new Error("The OPENROUTER_API_KEY is not set in the Supabase project secrets.")
+    } else {
+      console.log("Successfully loaded OPENROUTER_API_KEY.");
     }
 
     const { message } = await req.json()
     if (!message) {
-      console.error("No message in request body.");
-      throw new Error("No message provided in the request body.")
+      console.error("Request body did not contain a 'message' property.");
+      return new Response(JSON.stringify({ error: "No message provided in the request body." }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
     }
+    console.log(`Received message: "${message}"`);
 
+    const requestBody = {
+      model: "mistralai/mistral-7b-instruct:free",
+      messages: [
+        { role: "system", content: "You are a friendly and helpful cooking assistant for a recipe website called ZaikabyShahana. Keep your answers concise and focused on cooking, recipes, and culinary advice." },
+        { role: "user", content: message },
+      ],
+    };
+
+    console.log("Sending request to OpenRouter API...");
     const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
       headers: {
@@ -33,19 +50,14 @@ serve(async (req) => {
         'HTTP-Referer': `https://hgstyhpuewxeiwpphorj.supabase.co`,
         'X-Title': `ZaikabyShahana`,
       },
-      body: JSON.stringify({
-        model: "mistralai/mistral-7b-instruct:free", // Switched to a more reliable free model
-        messages: [
-          { role: "system", content: "You are a friendly and helpful cooking assistant for a recipe website called ZaikabyShahana. Keep your answers concise and focused on cooking, recipes, and culinary advice." },
-          { role: "user", content: message },
-        ],
-      }),
+      body: JSON.stringify(requestBody),
     })
+    console.log(`Received response from OpenRouter with status: ${response.status}`);
 
     const data = await response.json()
 
     if (!response.ok) {
-      console.error("OpenRouter API Error:", data);
+      console.error("OpenRouter API returned an error.", { status: response.status, body: data });
       const errorMessage = data?.error?.message || `API request failed with status ${response.status}`;
       throw new Error(errorMessage);
     }
@@ -53,17 +65,18 @@ serve(async (req) => {
     const botResponse = data.choices?.[0]?.message?.content;
 
     if (!botResponse) {
-      console.error("Could not extract bot response. Full API response:", data);
+      console.error("Could not extract bot response from API. Full API response:", data);
       throw new Error("Failed to extract bot response from API.");
     }
 
+    console.log("Successfully generated bot response.");
     return new Response(JSON.stringify({ reply: botResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
 
   } catch (error) {
-    console.error("Error in Edge Function:", error.message);
+    console.error("An unexpected error occurred in the edge function:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
