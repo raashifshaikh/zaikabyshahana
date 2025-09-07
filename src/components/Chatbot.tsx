@@ -28,17 +28,12 @@ const Chatbot = () => {
 
   const { mutate: sendMessage, isPending } = useMutation({
     mutationFn: async (newMessage: string) => {
-      const newMessages: Message[] = [
-        ...messages,
-        { role: "user", content: newMessage },
-      ];
-
-      const { data, error } = await supabase.functions.invoke("openai", {
-        body: { query: newMessage, history: newMessages.slice(0, -1) },
+      const { data, error } = await supabase.functions.invoke("chatbot-proxy", {
+        body: { query: newMessage, history: messages },
       });
 
       if (error) {
-        throw new Error("Failed to get a response from the assistant.");
+        throw new Error(error.message || "Failed to get a response from the assistant.");
       }
       return data.reply;
     },

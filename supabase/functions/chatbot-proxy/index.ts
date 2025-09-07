@@ -13,35 +13,30 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Chatbot function invoked.");
-
     const apiKey = Deno.env.get("OPENROUTER_API_KEY")
     if (!apiKey) {
-      console.error("CRITICAL: OPENROUTER_API_KEY environment variable not found.");
       throw new Error("The OPENROUTER_API_KEY is not set in the Supabase project secrets.")
-    } else {
-      console.log("Successfully loaded OPENROUTER_API_KEY.");
     }
 
-    const { message } = await req.json()
-    if (!message) {
-      console.error("Request body did not contain a 'message' property.");
-      return new Response(JSON.stringify({ error: "No message provided in the request body." }), {
+    const { query, history } = await req.json()
+    if (!query) {
+      return new Response(JSON.stringify({ error: "No query provided in the request body." }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
     }
-    console.log(`Received message: "${message}"`);
+
+    const messages = [
+      { role: "system", content: "You are an enthusiastic and friendly cooking assistant for 'ZaikabyShahana', a recipe website by a passionate chef named Shahana. Your tone is encouraging and helpful. You love talking about food! Your goal is to help users with cooking questions, suggest recipes, and explain culinary techniques. Keep your answers concise, focused on cooking, and always positive. When asked for a recipe, provide a simple, clear list of ingredients and steps." },
+      ...(history || []),
+      { role: "user", content: query },
+    ];
 
     const requestBody = {
       model: "mistralai/mistral-7b-instruct:free",
-      messages: [
-        { role: "system", content: "You are an enthusiastic and friendly cooking assistant for 'ZaikabyShahana', a recipe website by a passionate chef named Shahana. Your tone is encouraging and helpful. You love talking about food! Your goal is to help users with cooking questions, suggest recipes, and explain culinary techniques. Keep your answers concise, focused on cooking, and always positive. When asked for a recipe, provide a simple, clear list of ingredients and steps." },
-        { role: "user", content: message },
-      ],
+      messages: messages,
     };
 
-    console.log("Sending request to OpenRouter API...");
     const response = await fetch(OPENROUTER_API_URL, {
       method: 'POST',
       headers: {
@@ -52,12 +47,10 @@ serve(async (req) => {
       },
       body: JSON.stringify(requestBody),
     })
-    console.log(`Received response from OpenRouter with status: ${response.status}`);
 
     const data = await response.json()
 
     if (!response.ok) {
-      console.error("OpenRouter API returned an error.", { status: response.status, body: data });
       const errorMessage = data?.error?.message || `API request failed with status ${response.status}`;
       throw new Error(errorMessage);
     }
@@ -65,18 +58,15 @@ serve(async (req) => {
     const botResponse = data.choices?.[0]?.message?.content;
 
     if (!botResponse) {
-      console.error("Could not extract bot response from API. Full API response:", data);
       throw new Error("Failed to extract bot response from API.");
     }
 
-    console.log("Successfully generated bot response.");
     return new Response(JSON.stringify({ reply: botResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
 
   } catch (error) {
-    console.error("An unexpected error occurred in the edge function:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
