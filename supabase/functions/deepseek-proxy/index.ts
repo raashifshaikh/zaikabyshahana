@@ -15,7 +15,7 @@ serve(async (req) => {
   try {
     const apiKey = Deno.env.get("DEEPSEEK_API_KEY")
     if (!apiKey) {
-      throw new Error("DEEPSEEK_API_KEY is not set in environment variables. Please add it in your Supabase project settings.")
+      throw new Error("DEEPSEEK_API_KEY is not set in environment variables.")
     }
 
     const { message } = await req.json()
@@ -40,20 +40,30 @@ serve(async (req) => {
 
     const data = await response.json()
 
-    if (!response.ok) {
-      throw new Error(data.error?.message || `API request failed with status ${response.status}`)
+    // Check for an error object in the response body, even if status is 2xx
+    if (data.error) {
+      throw new Error(data.error.message || JSON.stringify(data.error));
     }
 
-    const botResponse = data.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response."
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`)
+    }
+
+    const botResponse = data.choices?.[0]?.message?.content;
+
+    if (!botResponse) {
+      throw new Error("Failed to extract bot response from API. Full response: " + JSON.stringify(data));
+    }
 
     return new Response(JSON.stringify({ reply: botResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
+    console.error("Deepseek Proxy Error:", error.message);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
+      status: 400,
     })
   }
 })
