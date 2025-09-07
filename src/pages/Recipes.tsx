@@ -6,11 +6,18 @@ import { Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapMealDBToRecipe } from "@/lib/utils";
+import { mapMealDBToRecipe, mapIndianFoodDBToRecipe } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
 
 const fetchRecipes = async (searchTerm: string, category: string) => {
-  // If searching by term, this takes precedence
+  // Special case for the new Indian Food API
+  if (category === "Indian") {
+    const { data, error } = await supabase.functions.invoke("indian-food-proxy");
+    if (error) throw new Error(error.message);
+    return Array.isArray(data) ? data.map(mapIndianFoodDBToRecipe) : [];
+  }
+
+  // If searching by term, this takes precedence for TheMealDB
   if (searchTerm) {
     const { data, error } = await supabase.functions.invoke("themealdb-proxy", {
       body: { path: 'search.php', params: { s: searchTerm } },
@@ -19,16 +26,14 @@ const fetchRecipes = async (searchTerm: string, category: string) => {
     return data.meals ? data.meals.map(mapMealDBToRecipe) : [];
   }
 
-  // If filtering by category
+  // If filtering by category in TheMealDB
   if (category && category !== "all") {
-    // 1. Get list of meal stubs in the category
     const { data: categoryData, error: categoryError } = await supabase.functions.invoke("themealdb-proxy", {
       body: { path: 'filter.php', params: { c: category } },
     });
     if (categoryError) throw new Error(categoryError.message);
     if (!categoryData.meals) return [];
 
-    // 2. Fetch full details for each meal in parallel for a richer UI
     const recipePromises = categoryData.meals.map((meal: any) => 
       supabase.functions.invoke("themealdb-proxy", {
         body: { path: 'lookup.php', params: { i: meal.idMeal } },
@@ -51,7 +56,7 @@ const Recipes = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const categories = ["all", "Beef", "Breakfast", "Chicken", "Dessert", "Goat", "Lamb", "Miscellaneous", "Pasta", "Pork", "Seafood", "Side", "Starter", "Vegan", "Vegetarian"];
+  const categories = ["all", "Indian", "Beef", "Breakfast", "Chicken", "Dessert", "Goat", "Lamb", "Miscellaneous", "Pasta", "Pork", "Seafood", "Side", "Starter", "Vegan", "Vegetarian"];
 
   const { data: recipes, isLoading } = useQuery({ 
     queryKey: ["recipes", debouncedSearchTerm, selectedCategory], 

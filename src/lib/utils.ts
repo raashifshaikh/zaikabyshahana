@@ -33,3 +33,24 @@ export const mapMealDBToRecipe = (meal: any): Recipe => {
     youtubeUrl: meal.strYoutube,
   };
 };
+
+// Helper function to map Indian Food DB API response to our Recipe type
+export const mapIndianFoodDBToRecipe = (item: any): Recipe => {
+  return {
+    // We add a prefix to avoid ID conflicts with TheMealDB
+    id: `indian_${item.id}`,
+    title: item.name,
+    image: item.image,
+    category: item.course,
+    area: item.cuisine,
+    tags: [],
+    description: item.description,
+    // The ingredients from this API are full strings, so we adapt
+    ingredients: item.ingredients.map((ing: string) => ({
+      quantity: "",
+      name: ing,
+    })),
+    instructions: item.instructions,
+    youtubeUrl: undefined,
+  };
+};

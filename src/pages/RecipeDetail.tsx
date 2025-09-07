@@ -1,14 +1,15 @@
 import { useParams } from "react-router-dom";
-import { Utensils, Printer, Youtube, Tag } from "lucide-react";
+import { Printer, Youtube, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import NotFound from "./NotFound";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapMealDBToRecipe } from "@/lib/utils";
+import { mapMealDBToRecipe, mapIndianFoodDBToRecipe } from "@/lib/utils";
+import { Recipe } from "@/data/recipes";
 
-const fetchRecipe = async (id: string) => {
+const fetchMealDBRecipe = async (id: string): Promise<Recipe> => {
   const { data, error } = await supabase.functions.invoke("themealdb-proxy", {
     body: { path: `lookup.php`, params: { i: id } },
   });
@@ -17,12 +18,27 @@ const fetchRecipe = async (id: string) => {
   return mapMealDBToRecipe(data.meals[0]);
 };
 
+const fetchIndianRecipe = async (id: string): Promise<Recipe> => {
+  const { data, error } = await supabase.functions.invoke("indian-food-proxy");
+  if (error) throw new Error(error.message);
+  if (!Array.isArray(data)) throw new Error("Invalid data from Indian Food API");
+  
+  const recipeData = data.find(item => item.id === id);
+  if (!recipeData) throw new Error("Indian recipe not found");
+  
+  return mapIndianFoodDBToRecipe(recipeData);
+};
+
 const RecipeDetail = () => {
   const { id } = useParams<{ id: string }>();
+
+  const isIndianRecipe = id?.startsWith("indian_");
+  const recipeId = isIndianRecipe ? id?.replace("indian_", "") : id;
+
   const { data: recipe, isLoading, isError } = useQuery({
-    queryKey: ["recipe", id],
-    queryFn: () => fetchRecipe(id!),
-    enabled: !!id,
+    queryKey: ["recipe", recipeId],
+    queryFn: () => isIndianRecipe ? fetchIndianRecipe(recipeId!) : fetchMealDBRecipe(recipeId!),
+    enabled: !!recipeId,
   });
 
   if (isLoading) {
@@ -32,12 +48,6 @@ const RecipeDetail = () => {
           <Skeleton className="h-10 w-3/4 mb-2" />
           <Skeleton className="h-6 w-1/4 mb-6" />
           <Skeleton className="w-full h-96 rounded-lg mb-8" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-          </div>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
               <Skeleton className="h-8 w-1/2 mb-4" />
