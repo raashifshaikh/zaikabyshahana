@@ -13,7 +13,7 @@ type Message = {
 };
 
 const getBotResponse = async (message: string): Promise<React.ReactNode> => {
-  const { data, error } = await supabase.functions.invoke("deepseek-proxy", {
+  const { data, error } = await supabase.functions.invoke("chatbot-proxy", {
     body: { message },
   });
 
