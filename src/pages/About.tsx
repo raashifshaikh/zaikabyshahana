@@ -16,26 +16,21 @@ const About = () => {
 
       {/* Main Content */}
       <section className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto grid md:grid-cols-5 gap-12 items-center">
-          <div className="md:col-span-2">
-            <img
-              src="https://images.unsplash.com/photo-1583162094738-05cb-6278f16f?q=80&w=1887&auto=format&fit=crop"
-              alt="Chef Shahana"
-              className="rounded-lg shadow-xl w-full h-auto object-cover aspect-[4/5]"
-            />
-          </div>
-          <div className="md:col-span-3">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-red-900 mb-4">Hi, I’m Shahana 👩‍🍳✨</h2>
-            <p className="text-stone-600 mb-4 leading-relaxed">
+            <p className="text-stone-600 mb-4 leading-relaxed text-left">
               I’m 22 years old, a full-time teacher by profession and a passionate cook at heart. Cooking has always been more than just a hobby for me—it’s my way of expressing creativity, love, and culture.
             </p>
-            <p className="text-stone-600 mb-4 leading-relaxed">
+            <p className="text-stone-600 mb-4 leading-relaxed text-left">
               While I spend most of my day teaching, I dedicate my free time to experimenting in the kitchen, discovering flavors, and sharing recipes that bring people together. Among all dishes, chicken recipes hold a special place in my heart—from spicy curries to flavorful biryanis, I love exploring new ways to make them delicious.
             </p>
-            <p className="text-stone-600 mb-6 leading-relaxed">
+            <p className="text-stone-600 mb-6 leading-relaxed text-left">
               Through Zaika by Shahana, I want to share my journey, my favorite recipes, and my love for desi food with the world. Whether you’re a beginner or an experienced foodie, I hope you’ll find inspiration here to create meals that not only taste good but also make memories.
             </p>
-            
+          </div>
+          
+          <div className="max-w-4xl mx-auto mt-16">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
               <div className="p-4 rounded-lg">
                 <UtensilsCrossed className="h-10 w-10 mx-auto mb-3 text-red-800" />
