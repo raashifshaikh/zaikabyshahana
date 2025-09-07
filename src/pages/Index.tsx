@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { mapMealDBToRecipe } from "@/lib/utils";
+import SEO from "@/components/SEO";
 
 const fetchRandomRecipes = async () => {
   const randomRecipePromises = Array.from({ length: 4 }).map(() =>
@@ -35,122 +36,128 @@ const Index = () => {
   }, [recipes]);
 
   return (
-    <div className="bg-amber-50 text-stone-800">
-      {/* Hero Section */}
-      <section className="relative py-20 md:py-32 bg-cover bg-center text-white" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop')" }}>
-        <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className="container relative mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Zaika by Shahana</h1>
-          <p className="mt-4 text-lg md:text-xl text-amber-100">
-            Delicious Recipes, Made Simple.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link to="/recipes">
-              <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
-                Explore Recipes <ArrowRight className="ml-2 h-5 w-5" />
+    <>
+      <SEO 
+        title="Home" 
+        description="Welcome to ZaikabyShahana. Discover delicious and simple recipes, cooking tips, and culinary inspiration from Shahana."
+      />
+      <div className="bg-amber-50 text-stone-800">
+        {/* Hero Section */}
+        <section className="relative py-20 md:py-32 bg-cover bg-center text-white" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop')" }}>
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="container relative mx-auto text-center">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">Zaika by Shahana</h1>
+            <p className="mt-4 text-lg md:text-xl text-amber-100">
+              Delicious Recipes, Made Simple.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <Link to="/recipes">
+                <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
+                  Explore Recipes <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Button size="lg" variant="outline" className="border-white bg-transparent hover:bg-white hover:text-red-800" onClick={() => setIsOpen(true)}>
+                Ask the Cooking Bot
               </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="border-white bg-transparent hover:bg-white hover:text-red-800" onClick={() => setIsOpen(true)}>
-              Ask the Cooking Bot
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Recipe of the Day Section */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center text-red-900 mb-4">Recipe of the Day</h2>
-          <p className="text-center text-stone-600 mb-12">Our special pick for you today!</p>
-          {isLoading || !recipeOfTheDay ? (
-            <div className="max-w-4xl mx-auto md:flex">
-              <Skeleton className="h-64 w-full md:h-auto md:w-1/2" />
-              <div className="p-8 md:w-1/2 space-y-4">
-                <Skeleton className="h-4 w-1/4" />
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-12 w-full" />
-              </div>
             </div>
-          ) : (
-            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden md:flex hover:shadow-red-100 transition-shadow duration-300">
-              <div className="md:w-1/2">
-                <img className="h-64 w-full object-cover md:h-full" src={recipeOfTheDay.image} alt={recipeOfTheDay.title} />
+          </div>
+        </section>
+
+        {/* Recipe of the Day Section */}
+        <section className="py-16 md:py-24 bg-white">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center text-red-900 mb-4">Recipe of the Day</h2>
+            <p className="text-center text-stone-600 mb-12">Our special pick for you today!</p>
+            {isLoading || !recipeOfTheDay ? (
+              <div className="max-w-4xl mx-auto md:flex">
+                <Skeleton className="h-64 w-full md:h-auto md:w-1/2" />
+                <div className="p-8 md:w-1/2 space-y-4">
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="h-8 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                </div>
               </div>
-              <div className="p-8 md:w-1/2 flex flex-col justify-center">
-                {recipeOfTheDay.category && <div className="uppercase tracking-wide text-sm text-red-800 font-semibold">{recipeOfTheDay.category}</div>}
-                <h3 className="mt-1 text-2xl font-bold text-stone-900">{recipeOfTheDay.title}</h3>
-                <p className="mt-2 text-stone-600 line-clamp-3">{recipeOfTheDay.description}</p>
-                {recipeOfTheDay.area && <div className="mt-4 flex items-center">
-                  <Utensils className="h-5 w-5 text-red-800" />
-                  <span className="ml-2 text-stone-600">{recipeOfTheDay.area} Cuisine</span>
-                </div>}
-                <Link to={`/recipes/${recipeOfTheDay.id}`} className="mt-6">
-                  <Button size="lg" className="w-full bg-red-800 hover:bg-red-900">
-                    Get the Recipe
-                  </Button>
-                </Link>
+            ) : (
+              <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden md:flex hover:shadow-red-100 transition-shadow duration-300">
+                <div className="md:w-1/2">
+                  <img className="h-64 w-full object-cover md:h-full" src={recipeOfTheDay.image} alt={recipeOfTheDay.title} />
+                </div>
+                <div className="p-8 md:w-1/2 flex flex-col justify-center">
+                  {recipeOfTheDay.category && <div className="uppercase tracking-wide text-sm text-red-800 font-semibold">{recipeOfTheDay.category}</div>}
+                  <h3 className="mt-1 text-2xl font-bold text-stone-900">{recipeOfTheDay.title}</h3>
+                  <p className="mt-2 text-stone-600 line-clamp-3">{recipeOfTheDay.description}</p>
+                  {recipeOfTheDay.area && <div className="mt-4 flex items-center">
+                    <Utensils className="h-5 w-5 text-red-800" />
+                    <span className="ml-2 text-stone-600">{recipeOfTheDay.area} Cuisine</span>
+                  </div>}
+                  <Link to={`/recipes/${recipeOfTheDay.id}`} className="mt-6">
+                    <Button size="lg" className="w-full bg-red-800 hover:bg-red-900">
+                      Get the Recipe
+                    </Button>
+                  </Link>
+                </div>
               </div>
+            )}
+          </div>
+        </section>
+
+        {/* About Shahana Section */}
+        <section className="py-16 md:py-24 bg-amber-50">
+          <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
+            <div className="order-2 md:order-1">
+              <h2 className="text-3xl font-bold text-red-900 mb-4">A Pinch of Passion in Every Dish</h2>
+              <p className="text-stone-600 mb-4 leading-relaxed">
+                Hi, I’m Shahana! I’m a full-time teacher by profession and a passionate cook at heart. Cooking is my way of expressing creativity, love, and culture.
+              </p>
+              <p className="text-stone-600 leading-relaxed">
+                Through Zaika by Shahana, I want to share my journey, my favorite recipes, and my love for desi food with the world. I hope you’ll find inspiration here to create meals that not only taste good but also make memories.
+              </p>
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* About Shahana Section */}
-      <section className="py-16 md:py-24 bg-amber-50">
-        <div className="container mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <div className="order-2 md:order-1">
-            <h2 className="text-3xl font-bold text-red-900 mb-4">A Pinch of Passion in Every Dish</h2>
-            <p className="text-stone-600 mb-4 leading-relaxed">
-              Hi, I’m Shahana! I’m a full-time teacher by profession and a passionate cook at heart. Cooking is my way of expressing creativity, love, and culture.
-            </p>
-            <p className="text-stone-600 leading-relaxed">
-              Through Zaika by Shahana, I want to share my journey, my favorite recipes, and my love for desi food with the world. I hope you’ll find inspiration here to create meals that not only taste good but also make memories.
-            </p>
+            <div className="order-1 md:order-2">
+              <img
+                src="https://images.unsplash.com/photo-1583162094738-05cb-6278f16f?q=80&w=1887&auto=format&fit=crop"
+                alt="Chef Shahana"
+                className="rounded-lg shadow-xl w-full h-auto object-cover aspect-square"
+              />
+            </div>
           </div>
-          <div className="order-1 md:order-2">
-            <img
-              src="https://images.unsplash.com/photo-1583162094738-05cb-6278f16f?q=80&w=1887&auto=format&fit=crop"
-              alt="Chef Shahana"
-              className="rounded-lg shadow-xl w-full h-auto object-cover aspect-square"
-            />
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Featured Recipes Section */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center text-red-900 mb-12">Featured Recipes</h2>
-          {isLoading ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="space-y-2">
-                        <Skeleton className="h-48 w-full" />
-                        <Skeleton className="h-4 w-1/4" />
-                        <Skeleton className="h-6 w-3/4" />
-                        <Skeleton className="h-4 w-full" />
-                    </div>
+        {/* Featured Recipes Section */}
+        <section className="py-16 md:py-24 bg-white">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center text-red-900 mb-12">Featured Recipes</h2>
+            {isLoading ? (
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="space-y-2">
+                          <Skeleton className="h-48 w-full" />
+                          <Skeleton className="h-4 w-1/4" />
+                          <Skeleton className="h-6 w-3/4" />
+                          <Skeleton className="h-4 w-full" />
+                      </div>
+                  ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {featuredRecipes.map((recipe, index) => (
+                  <RecipeCard key={recipe.id} recipe={recipe} index={index} />
                 ))}
+              </div>
+            )}
+            <div className="text-center mt-12">
+              <Link to="/recipes">
+                <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
+                  View All Recipes
+                </Button>
+              </Link>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {featuredRecipes.map((recipe, index) => (
-                <RecipeCard key={recipe.id} recipe={recipe} index={index} />
-              ))}
-            </div>
-          )}
-          <div className="text-center mt-12">
-            <Link to="/recipes">
-              <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
-                View All Recipes
-              </Button>
-            </Link>
           </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </>
   );
 };
 

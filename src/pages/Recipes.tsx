@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { mapMealDBToRecipe, mapIndianFoodDBToRecipe } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
+import SEO from "@/components/SEO";
 
 const fetchRecipes = async (searchTerm: string, category: string) => {
   // Special case for the new Indian Food API
@@ -90,59 +91,65 @@ const Recipes = () => {
   const hasActiveFilter = debouncedSearchTerm || selectedCategory !== "all";
 
   return (
-    <div className="bg-amber-50 text-stone-800 min-h-screen">
-      <div className="container mx-auto py-12 px-4">
-        <h1 className="text-4xl font-bold text-center text-red-900 mb-4">Explore Our Recipes</h1>
-        <p className="text-center text-stone-600 mb-12">Find the perfect dish for any occasion.</p>
+    <>
+      <SEO 
+        title="Explore Recipes"
+        description="Find the perfect dish for any occasion. Browse our collection of delicious and easy-to-follow recipes, from Indian classics to modern favorites."
+      />
+      <div className="bg-amber-50 text-stone-800 min-h-screen">
+        <div className="container mx-auto py-12 px-4">
+          <h1 className="text-4xl font-bold text-center text-red-900 mb-4">Explore Our Recipes</h1>
+          <p className="text-center text-stone-600 mb-12">Find the perfect dish for any occasion.</p>
 
-        <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-white p-6 rounded-lg shadow-sm">
-          <div className="relative md:col-span-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-stone-400" />
-            <Input 
-              placeholder="Search for recipes..." 
-              className="pl-10" 
-              value={searchTerm}
-              onChange={handleSearchChange}
-            />
+          <div className="mb-12 grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-white p-6 rounded-lg shadow-sm">
+            <div className="relative md:col-span-2">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-stone-400" />
+              <Input 
+                placeholder="Search for recipes..." 
+                className="pl-10" 
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </div>
+            <Select onValueChange={handleCategoryChange} value={selectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {category === "all" ? "All Categories" : category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <Select onValueChange={handleCategoryChange} value={selectedCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="Filter by Category" />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map(category => (
-                <SelectItem key={category} value={category}>
-                  {category === "all" ? "All Categories" : category}
-                </SelectItem>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-48 w-full" />
+                  <Skeleton className="h-4 w-1/4" />
+                  <Skeleton className="h-6 w-3/4" />
+                </div>
               ))}
-            </SelectContent>
-          </Select>
+            </div>
+          ) : recipes && recipes.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {recipes.map((recipe, index) => (
+                <RecipeCard key={recipe.id} recipe={recipe} index={index} />
+              ))}
+            </div>
+          ) : hasActiveFilter ? (
+            <div className="text-center py-16">
+              <h2 className="text-2xl font-semibold text-red-900">No Recipes Found</h2>
+              <p className="text-stone-600 mt-2">Try adjusting your search or selecting a different category.</p>
+            </div>
+          ) : null}
         </div>
-
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-48 w-full" />
-                <Skeleton className="h-4 w-1/4" />
-                <Skeleton className="h-6 w-3/4" />
-              </div>
-            ))}
-          </div>
-        ) : recipes && recipes.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {recipes.map((recipe, index) => (
-              <RecipeCard key={recipe.id} recipe={recipe} index={index} />
-            ))}
-          </div>
-        ) : hasActiveFilter ? (
-          <div className="text-center py-16">
-            <h2 className="text-2xl font-semibold text-red-900">No Recipes Found</h2>
-            <p className="text-stone-600 mt-2">Try adjusting your search or selecting a different category.</p>
-          </div>
-        ) : null}
       </div>
-    </div>
+    </>
   );
 };
 
