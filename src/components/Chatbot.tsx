@@ -1,126 +1,152 @@
 import { useState, useRef, useEffect } from "react";
-import { Bot, Send, User } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { useChatbot } from "@/context/ChatbotContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Send, Bot } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { useChatbot } from "@/context/ChatbotContext";
-import { supabase } from "@/integrations/supabase/client";
 
 type Message = {
-  sender: "user" | "bot";
-  content: React.ReactNode;
-};
-
-const TypingIndicator = () => (
-  <div className="flex items-center gap-1.5 p-2">
-    <span className="h-2 w-2 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-    <span className="h-2 w-2 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-    <span className="h-2 w-2 bg-stone-400 rounded-full animate-bounce"></span>
-  </div>
-);
-
-const getBotResponse = async (message: string): Promise<React.ReactNode> => {
-  const { data, error } = await supabase.functions.invoke("chatbot-proxy", {
-    body: { message },
-  });
-
-  if (error) {
-    console.error("Error invoking Supabase function:", error);
-    const detailedError = (error as any).context?.error?.message || error.message;
-    return <p className="text-red-500">I'm sorry, an error occurred: {detailedError}</p>;
-  }
-
-  if (data.error) {
-    console.error("Error payload from Supabase function:", data.error);
-    return <p className="text-red-500">I'm sorry, something went wrong: {data.error}</p>;
-  }
-  
-  if (!data || !data.reply) {
-    return <p className="text-red-500">I'm sorry, I received an unexpected response from the server.</p>;
-  }
-
-  return <p>{data.reply}</p>;
+  role: "user" | "assistant" | "system";
+  content: string;
 };
 
 const Chatbot = () => {
   const { isOpen, setIsOpen } = useChatbot();
+  const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
-    { sender: "bot", content: "Welcome to ZaikabyShahana! I'm your AI cooking assistant. How can I help you today?" }
+    {
+      role: "assistant",
+      content: "Hi there! How can I help you with your cooking today?",
+    },
   ]);
-  const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const { mutate: sendMessage, isPending } = useMutation({
+    mutationFn: async (newMessage: string) => {
+      const newMessages: Message[] = [
+        ...messages,
+        { role: "user", content: newMessage },
+      ];
+
+      const { data, error } = await supabase.functions.invoke("openai", {
+        body: { query: newMessage, history: newMessages.slice(0, -1) },
+      });
+
+      if (error) {
+        throw new Error("Failed to get a response from the assistant.");
+      }
+      return data.reply;
+    },
+    onMutate: (newMessage) => {
+      setMessages((prev) => [...prev, { role: "user", content: newMessage }]);
+    },
+    onSuccess: (reply) => {
+      setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
+    },
+    onError: () => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Sorry, I'm having a little trouble right now. Please try again later.",
+        },
+      ]);
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isPending) return;
+    sendMessage(input);
+    setInput("");
+  };
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+      scrollAreaRef.current.scrollTo({
+        top: scrollAreaRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
-  }, [messages, isLoading]);
-
-  const handleSendMessage = async () => {
-    if (inputValue.trim() === "" || isLoading) return;
-
-    const userMessage: Message = { sender: "user", content: inputValue };
-    setMessages(prev => [...prev, userMessage]);
-    const currentInput = inputValue;
-    setInputValue("");
-    setIsLoading(true);
-
-    const botResponseContent = await getBotResponse(currentInput);
-    const botMessage: Message = { sender: "bot", content: botResponseContent };
-    
-    setIsLoading(false);
-    setMessages(prev => [...prev, botMessage]);
-  };
+  }, [messages, isPending]);
 
   return (
-    <Drawer open={isOpen} onOpenChange={setIsOpen}>
-      <DrawerContent className="h-[70vh]">
-        <div className="mx-auto w-full max-w-md flex flex-col h-full">
-          <DrawerHeader>
-            <DrawerTitle className="text-center text-red-900">ZaikabyShahana Cooking Bot</DrawerTitle>
-          </DrawerHeader>
-          <ScrollArea className="flex-grow p-4" ref={scrollAreaRef}>
-            <div className="space-y-4">
-              {messages.map((msg, index) => (
-                <div key={index} className={`flex items-start gap-3 ${msg.sender === 'user' ? 'justify-end' : ''}`}>
-                  {msg.sender === 'bot' && <Bot className="h-8 w-8 text-red-800 flex-shrink-0" />}
-                  <div className={`rounded-lg p-3 max-w-xs ${msg.sender === 'user' ? 'bg-red-800 text-white' : 'bg-stone-100'}`}>
-                    {msg.content}
-                  </div>
-                  {msg.sender === 'user' && <User className="h-8 w-8 text-stone-500 flex-shrink-0" />}
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetContent className="flex flex-col p-0">
+        <SheetHeader className="p-6 pb-4">
+          <SheetTitle>Cooking Bot</SheetTitle>
+          <SheetDescription>
+            Ask me anything about recipes, ingredients, or cooking techniques!
+          </SheetDescription>
+        </SheetHeader>
+        <ScrollArea className="flex-1" ref={scrollAreaRef}>
+          <div className="p-6 space-y-4">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "flex items-start gap-3",
+                  message.role === "user" && "justify-end"
+                )}
+              >
+                {message.role === "assistant" && (
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src="https://i.postimg.cc/tZy1x4jT/zaikabyshahana-high-resolution-logo-transparent.png" alt="Bot" />
+                    <AvatarFallback>
+                      <Bot />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                <div
+                  className={cn(
+                    "p-3 rounded-lg max-w-xs md:max-w-md",
+                    message.role === "user"
+                      ? "bg-red-800 text-white rounded-br-none"
+                      : "bg-stone-200 text-stone-800 rounded-bl-none"
+                  )}
+                >
+                  <p className="text-sm">{message.content}</p>
                 </div>
-              ))}
-              {isLoading && (
-                <div className="flex items-start gap-3">
-                  <Bot className="h-8 w-8 text-red-800 flex-shrink-0" />
-                  <div className="rounded-lg bg-stone-100">
-                    <TypingIndicator />
-                  </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-          <div className="p-4 border-t">
-            <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}>
-              <div className="relative">
-                <Input
-                  placeholder="Ask for a recipe..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  className="pr-12"
-                  disabled={isLoading}
-                />
-                <Button type="submit" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-8 w-10 bg-red-800 hover:bg-red-900" disabled={isLoading}>
-                  <Send className="h-4 w-4" />
-                </Button>
               </div>
-            </form>
+            ))}
+            {isPending && (
+              <div className="flex items-start gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="https://i.postimg.cc/tZy1x4jT/zaikabyshahana-high-resolution-logo-transparent.png" alt="Bot" />
+                  <AvatarFallback>
+                    <Bot />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="p-3 rounded-lg bg-stone-200 text-stone-800 rounded-bl-none">
+                  <div className="flex items-center space-x-1">
+                    <span className="h-2 w-2 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                    <span className="h-2 w-2 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                    <span className="h-2 w-2 bg-stone-400 rounded-full animate-bounce"></span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </DrawerContent>
-    </Drawer>
+        </ScrollArea>
+        <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t bg-background">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask about a recipe..."
+            disabled={isPending}
+            className="flex-1"
+          />
+          <Button type="submit" size="icon" disabled={isPending || !input.trim()}>
+            <Send className="h-4 w-4" />
+          </Button>
+        </form>
+      </SheetContent>
+    </Sheet>
   );
 };
 
