@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { mapMealDBToRecipe } from "@/lib/utils";
 import SEO from "@/components/SEO";
+import { blogPosts } from "@/data/blogPosts";
+import BlogPostCard from "@/components/BlogPostCard";
 
 const fetchRandomRecipes = async () => {
   const randomRecipePromises = Array.from({ length: 4 }).map(() =>
@@ -34,6 +36,8 @@ const Index = () => {
   const recipeOfTheDay = useMemo(() => {
     return recipes ? recipes[0] : null;
   }, [recipes]);
+
+  const latestPosts = blogPosts.slice(0, 3);
 
   return (
     <>
@@ -151,6 +155,25 @@ const Index = () => {
               <Link to="/recipes">
                 <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
                   View All Recipes
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Latest Blog Posts Section */}
+        <section className="py-16 md:py-24 bg-amber-50">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center text-red-900 mb-12">From Our Kitchen Journal</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {latestPosts.map((post) => (
+                <BlogPostCard key={post.id} post={post} />
+              ))}
+            </div>
+            <div className="text-center mt-12">
+              <Link to="/blog">
+                <Button size="lg" className="bg-red-800 hover:bg-red-900 text-white">
+                  Read All Posts
                 </Button>
               </Link>
             </div>
